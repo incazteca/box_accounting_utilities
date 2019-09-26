@@ -2,7 +2,6 @@
 
 require 'csv'
 require 'date'
-require 'pry'
 
 # ChaseTransactionConverter, used for converting transactions for Chase CC to a
 # CSV we can use for box accounting
