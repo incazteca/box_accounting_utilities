@@ -10,7 +10,7 @@ class ChaseTransactionConverter
   UTC_DATE_FORMAT = '%Y-%m-%d'
   OUTPUT_FILE_NAME = 'transactions.csv'
 
-  attr_reader :transactions
+  attr_reader :transactions, :input_filename
 
   def initialize(filename)
     @input_filename = filename
@@ -41,6 +41,3 @@ class ChaseTransactionConverter
     end
   end
 end
-
-input_file = $ARGV[0]
-ChaseTransactionConverter.new(input_file).call
