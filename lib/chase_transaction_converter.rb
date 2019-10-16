@@ -2,26 +2,11 @@
 
 require 'csv'
 require 'date'
+require_relative 'transaction_converter'
 
 # ChaseTransactionConverter, used for converting transactions for Chase CC to a
 # CSV we can use for box accounting
-class ChaseTransactionConverter
-  US_DATE_FORMAT = '%m/%d/%Y'
-  UTC_DATE_FORMAT = '%Y-%m-%d'
-  OUTPUT_FILE_NAME = 'transactions.csv'
-
-  attr_reader :transactions, :input_filename
-
-  def initialize(filename)
-    @input_filename = filename
-    @transactions = []
-  end
-
-  def call
-    parse_transactions!
-    generate_output_csv
-  end
-
+class ChaseTransactionConverter < TransactionConverter
   def parse_transactions!
     CSV.foreach(@input_filename, converters: :numeric, headers: true) do |row|
       transaction_date = Date.strptime(row['Transaction Date'], US_DATE_FORMAT)
@@ -31,13 +16,6 @@ class ChaseTransactionConverter
         'Store' => row['Description'],
         'Original Amount' => -row['Amount'] # Use `-` to capture refunds
       }
-    end
-  end
-
-  def generate_output_csv
-    CSV.open(OUTPUT_FILE_NAME, 'wb') do |row|
-      row << transactions.first.keys
-      transactions.each { |t| row << t.values }
     end
   end
 end
