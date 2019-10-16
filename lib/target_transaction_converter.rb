@@ -28,15 +28,7 @@ class TargetTransactionConverter
     CSV.foreach(@input_filename, converters: :numeric, headers: true) do |row|
       next if row['Reference Number'].nil?
 
-      transaction_date = Date.strptime(row['Trans Date'], US_DATE_FORMAT)
-      amount_parsed = BigDecimal((AMOUNT_REGEX.match row['Amount'])[0])
-      amount = row['Type'] == 'Debit' ? amount_parsed : -amount_parsed
-
-      transactions << {
-        'Date' => transaction_date.strftime(UTC_DATE_FORMAT),
-        'Store' => "Target #{row['Merchant City']}".strip,
-        'Original Amount' => amount
-      }
+      transactions << process_row(row)
     end
   end
 
@@ -45,5 +37,19 @@ class TargetTransactionConverter
       row << transactions.first.keys
       transactions.each { |t| row << t.values }
     end
+  end
+
+  private
+
+  def process_row(row)
+    transaction_date = Date.strptime(row['Trans Date'], US_DATE_FORMAT)
+    amount_parsed = BigDecimal((AMOUNT_REGEX.match row['Amount'])[0])
+    amount = row['Type'] == 'Debit' ? amount_parsed : -amount_parsed
+
+    {
+      'Date' => transaction_date.strftime(UTC_DATE_FORMAT),
+      'Store' => "Target #{row['Merchant City']}".strip,
+      'Original Amount' => amount
+    }
   end
 end
