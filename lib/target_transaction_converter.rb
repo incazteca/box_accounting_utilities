@@ -2,7 +2,6 @@
 
 require 'csv'
 require 'date'
-require 'bigdecimal'
 require_relative 'transaction_converter'
 
 # TargetTransactionConverter, used for converting transactions for Target CC to
@@ -22,7 +21,7 @@ class TargetTransactionConverter < TransactionConverter
 
   def process_row(row)
     transaction_date = Date.strptime(row['Trans Date'], US_DATE_FORMAT)
-    amount_parsed = BigDecimal((AMOUNT_REGEX.match row['Amount'])[0])
+    amount_parsed = AMOUNT_REGEX.match(row['Amount'])[0].to_f
     amount = row['Type'] == 'Debit' ? amount_parsed : -amount_parsed
 
     {
