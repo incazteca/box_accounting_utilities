@@ -2,6 +2,7 @@
 
 require 'csv'
 require 'date'
+require 'bigdecimal'
 
 # TargetTransactionConverter, used for converting transactions for Target CC to
 # a CSV we can use for box accounting
@@ -9,6 +10,7 @@ class TargetTransactionConverter
   US_DATE_FORMAT = '%m/%d/%Y'
   UTC_DATE_FORMAT = '%Y-%m-%d'
   OUTPUT_FILE_NAME = 'transactions.csv'
+  AMOUNT_REGEX = /\d+.\d{2}/.freeze
 
   attr_reader :transactions, :input_filename
 
@@ -27,11 +29,13 @@ class TargetTransactionConverter
       next if row['Reference Number'].nil?
 
       transaction_date = Date.strptime(row['Trans Date'], US_DATE_FORMAT)
+      amount_parsed = BigDecimal((AMOUNT_REGEX.match row['Amount'])[0])
+      amount = row['Type'] == 'Debit' ? amount_parsed : -amount_parsed
 
       transactions << {
         'Date' => transaction_date.strftime(UTC_DATE_FORMAT),
         'Store' => "Target #{row['Merchant City']}".strip,
-        'Original Amount' => -row['Amount'] # Use `-` to capture refunds
+        'Original Amount' => amount
       }
     end
   end
