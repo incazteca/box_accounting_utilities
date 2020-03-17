@@ -1,16 +1,36 @@
 # frozen_string_literal: true
 
+require 'pry'
 require_relative 'lib/chase_transaction_converter'
 require_relative 'lib/target_transaction_converter'
 
-input_file = $ARGV[0]
-bank = $ARGV[1]
-
-case bank
-when 'target'
-  TargetTransactionConverter.new(input_file).call
-when 'chase'
-  ChaseTransactionConverter.new(input_file).call
-else
-  puts 'Provide a proper bank (chase|target)'
+def determine_bank(file_name)
+  return 'target' if file_name.match?(/Transactions_20\d*_\d*.csv/)
+  return 'chase' if file_name.match?(/Chase\d{4}_Activity20\d*_\d*_\d*.CSV/)
 end
+
+def main(input_files)
+  transactions = []
+  input_files.each do |input_file|
+    bank = determine_bank(input_file)
+    transactions += case bank
+                    when 'target'
+                      target = TargetTransactionConverter.new(input_file)
+                      target.parse_transactions!
+                      target.transactions
+                    when 'chase'
+                      chase = ChaseTransactionConverter.new(input_file)
+                      chase.parse_transactions!
+                      chase.transactions
+                    else
+                      puts "Couldn't determine what bank #{input_file} belonged to"
+                    end
+  end
+
+  # For now to get the work done
+  converter = TransactionConverter.new(nil)
+  converter.transactions = transactions
+  converter.generate_output_csv
+end
+
+main($ARGV)
