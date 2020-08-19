@@ -10,7 +10,8 @@ class TransactionConverter
   UTC_DATE_FORMAT = '%Y-%m-%d'
   OUTPUT_FILE_NAME = 'transactions.csv'
 
-  attr_reader :transactions, :input_filename
+  attr_reader :input_filename
+  attr_accessor :transactions
 
   def initialize(filename)
     @input_filename = filename
